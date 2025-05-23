@@ -31,9 +31,7 @@ export default function CustomerForm() {
     setError(null)
 
     try {
-      // 여기서 Cloudflare Worker로 데이터를 전송할 수 있습니다
-      // 예시 코드입니다 - 실제 구현시 엔드포인트를 변경해주세요
-      const response = await fetch("/api/submit-customer-data", {
+      const response = await fetch("/api/resident", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -90,7 +88,7 @@ export default function CustomerForm() {
               value={formData.jumin_no}
               onChange={handleChange}
               required
-              placeholder="1234"
+              placeholder="2505231234567"
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
