@@ -17,7 +17,12 @@ async function getJson(url: string, opt: RequestInit = {}) {
 export async function POST(request: NextRequest) {
   try {
     // 클라이언트로부터 데이터 받기
-    const { cust_name, jumin_no, pay_typ, mno_gubun } = await request.json()
+   const { cust_name, jumin_no, pay_typ, mno_gubun } = await request.json() as {
+   cust_name: string;
+   jumin_no: string;
+   pay_typ: string;
+   mno_gubun: string;
+   };
     
     // 필수 파라미터 검증
     if (!cust_name || !jumin_no) {
