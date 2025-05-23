@@ -1,95 +1,154 @@
-import Image from "next/image";
+"use client"
 
-export default function Home() {
+import type React from "react"
+
+import { useState } from "react"
+
+export default function CustomerForm() {
+  const [formData, setFormData] = useState({
+    cust_name: "",
+    jumin_no: "",
+    pay_typ: "02",
+    mno_gubun: "SKT",
+    req_no: "",
+  })
+
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [result, setResult] = useState<null | any>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    setError(null)
+
+    try {
+      // 여기서 Cloudflare Worker로 데이터를 전송할 수 있습니다
+      // 예시 코드입니다 - 실제 구현시 엔드포인트를 변경해주세요
+      const response = await fetch("/api/submit-customer-data", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      })
+
+      if (!response.ok) {
+        throw new Error("데이터 제출 중 오류가 발생했습니다")
+      }
+
+      const data = await response.json()
+      setResult(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다")
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.tsx</code>
-        </p>
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+      <div className="w-full max-w-md bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="bg-blue-600 p-4 text-white">
+          <h1 className="text-xl font-bold text-center">고객 정보 입력</h1>
+          <p className="text-sm text-center text-blue-100">Customer Information Form</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <div>
+            <label htmlFor="cust_name" className="block text-sm font-medium text-gray-700 mb-1">
+              고객명 (Customer Name)
+            </label>
+            <input
+              type="text"
+              id="cust_name"
+              name="cust_name"
+              value={formData.cust_name}
+              onChange={handleChange}
+              required
+              placeholder="이름"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="jumin_no" className="block text-sm font-medium text-gray-700 mb-1">
+              주민번호 (ID Number)
+            </label>
+            <input
+              type="text"
+              id="jumin_no"
+              name="jumin_no"
+              value={formData.jumin_no}
+              onChange={handleChange}
+              required
+              placeholder="1234"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+
+          <div>
+           <input
+              type="text"
+              id="pay_typ"
+              name="pay_typ"
+              value={formData.jumin_no}
+              onChange={handleChange}
+              required
+              placeholder="1234"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 hidden"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="mno_gubun" className="block text-sm font-medium text-gray-700 mb-1">
+              통신사 (Mobile Carrier)
+            </label>
+            <select
+              id="mno_gubun"
+              name="mno_gubun"
+              value={formData.mno_gubun}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="SKT">SKT</option>
+              <option value="KT">KT</option>
+              <option value="LGU+">LGU+</option>
+            </select>
+          </div>
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSubmitting ? "제출 중..." : "제출하기 (Submit)"}
+          </button>
+        </form>
+
+        {error && (
+          <div className="p-4 bg-red-50 border-t border-red-200">
+            <p className="text-sm text-red-600">{error}</p>
+          </div>
+        )}
+
+        {result && (
+          <div className="p-4 bg-green-50 border-t border-green-200">
+            <h3 className="font-medium text-green-800 mb-2">제출 완료 (Submission Complete)</h3>
+            <pre className="text-xs bg-white p-2 rounded border border-green-200 overflow-x-auto">
+              {JSON.stringify(result, null, 2)}
+            </pre>
+          </div>
+        )}
       </div>
-
-      <div className="relative z-[-1] flex place-items-center before:absolute before:h-[300px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 sm:before:w-[480px] sm:after:w-[240px] before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-balance text-sm opacity-50">
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  );
+    </div>
+  )
 }
