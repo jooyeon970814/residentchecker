@@ -4,14 +4,14 @@ const BASE = "https://www.eyagi.co.kr/ReJoin/action"
 const HEADERS = { "Content-Type": "application/x-www-form-urlencoded" }
 
 // 공통 fetch 함수
-async function getJson(url: string, opt: RequestInit = {}) {
+async function getJson<T>(url: string, opt: RequestInit = {}): Promise<T> {
   const res = await fetch(url, {
     headers: HEADERS,
     ...opt,
-  })
+  });
 
-  if (!res.ok) throw new Error(`HTTP ${res.status}`)
-  return res.json()
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json() as Promise<T>;
 }
 
 export async function POST(request: NextRequest) {
