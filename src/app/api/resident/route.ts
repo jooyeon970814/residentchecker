@@ -30,7 +30,10 @@ export async function POST(request: NextRequest) {
     }
 
     // 1단계: req_no 요청
-    const { req_no } = await getJson(`${BASE}/onlineJoin_agree_json.php`)
+    type AgreeResponse = {
+     req_no: string;
+    };
+    const { req_no } = await getJson<AgreeResponse>(`${BASE}/onlineJoin_agree_json.php`);
     if (!req_no) {
       return NextResponse.json({ error: "req_no를 가져오지 못했습니다." }, { status: 500 })
     }
